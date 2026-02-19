@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>FR CONSOLE</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body { background-color: #000; font-family: 'Segoe UI', sans-serif; color:white; }
+
+    .sidebar {
+      width: 240px; height: 100vh; position: fixed;
+      background-color: #000; padding: 20px 0;
+      border-right: 1px solid #222;
+      box-shadow: 3px 0 20px rgba(255,0,0,0.2);
+    }
+
+    .sidebar h5 {
+      text-align: center;
+      font-size: 32px;
+      font-weight: 900;
+      color: #ff1a1a;
+      text-shadow: 0 0 15px red;
+      margin-bottom: 8px;
+    }
+
+    .sidebar p {
+      text-align: center;
+      font-size: 18px;
+      font-weight: 800;
+      color: #ff1a1a;
+      text-shadow: 0 0 10px red;
+      margin-bottom: 12px;
+    }
+
+    .sidebar a {
+      display: block; padding: 12px 20px;
+      background: transparent !important;
+      color: white !important;
+      margin: 6px 12px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: 0.3s;
+    }
+
+    .sidebar a:hover,
+    .sidebar a.active {
+      background-color: #ff1a1a !important;
+      color: white !important;
+      box-shadow: 0 0 12px rgba(255,0,0,0.8);
+    }
+
+    .main {
+      margin-left: 260px;
+      padding: 30px 40px;
+      background-color: #0a0a0a;
+      min-height: 100vh;
+      border-top-left-radius: 15px;
+      color:white;
+    }
+
+    .form-label {
+      font-size: 20px;
+      font-weight: 900;
+      color: #ff1a1a;
+      text-shadow: 0 0 10px red;
+    }
+
+    .section { display: none; }
+
+    .section.active {
+      display: block;
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(8px);
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(255,0,0,0.3);
+    }
+
+    h4 {
+      font-size: 26px;
+      font-weight: 900;
+      color: #ff1a1a;
+      text-shadow: 0 0 10px red;
+    }
+
+    .form-control, .form-select {
+      background: #111; border: 1px solid #444; color:white;
+    }
+
+    .form-control:focus, .form-select:focus {
+      border-color: #ff1a1a; box-shadow: 0 0 10px red;
+    }
+
+    table thead th { background:#151515; color:#ff1a1a; }
+    table tbody td { background:#0d0d0d; color:white; }
+
+    #messageList { background:#0a0a0a; border:1px solid #333; }
+
+    #loginCode { background:#050505; border:1px solid #333; }
+
+    .toast {
+      position: fixed; bottom: 20px; right:-300px;
+      background:#ff1a1a; color:white;
+      padding:12px 24px; border-radius:6px;
+      font-weight:800; animation:slideIn 0.5s forwards;
+    }
+
+    @keyframes slideIn { from { right:-300px; } to { right:20px; } }
+  </style>
+</head>
+
+<body>
+
+<div class="sidebar">
+  <h5>FR CONSOLE</h5>
+  <p>USER MANAGEMENT</p>
+
+  <a href="#" onclick="showSection('add', event)" class="active">➕ Add User</a>
+  <a href="#" onclick="showSection('delete', event)">❌ Delete User</a>
+  <a href="#" onclick="showSection('pause', event)">⏸️ Pause User</a>
+  <a href="#" onclick="showSection('info', event)">ℹ️ Info User</a>
+  <a href="#" onclick="showSection('show', event)">📋 Show Users</a>
+  <a href="#" onclick="showSection('reset', event)">🔄 Reset HWID</a>
+  <a href="#" onclick="showSection('sendmsg', event)">✉️ Send Message</a>
+  <a href="#" onclick="showSection('project', event)">📁 Project Name</a>
+</div>
+
+<div class="main">
+
+  <div class="mb-4">
+    <label class="form-label">SELECT APPLICATION</label>
+    <select class="form-select" id="appSelect" onchange="refreshUsers()">
+      <option value="FRCONSOLE">FRCONSOLE</option>
+      <option value="SILENTAIM">SILENTAIM</option>
+      <option value="INTERNAL">INTERNAL</option>
+      <option value="SOUTH">SOUTH</option>
+      <option value="SILENTAIM">SOUTHAIM</option>
+      <option value="SOUTHV2">SOUTHV2</option>
+    </select>
+  </div>
+  <!-- Add User -->
+  <div id="add" class="section active">
+    <h4>➕ Add User</h4>
+    <form onsubmit="addUser(event)">
+      <input required type="text" class="form-control mb-2" placeholder="Username" id="add_username">
+      <input required type="password" class="form-control mb-2" placeholder="Password" id="add_password">
+      <input required type="date" class="form-control mb-2" id="add_expiry">
+      <button class="btn btn-success">Add</button>
+    </form>
+  </div>
+
+  <!-- Delete User -->
+  <div id="delete" class="section">
+    <h4>❌ Delete User</h4>
+    <form onsubmit="deleteUser(event)">
+      <input required type="text" class="form-control mb-2" placeholder="Username" id="delete_username">
+      <button class="btn btn-danger">Delete</button>
+    </form>
+  </div>
+
+  <!-- Pause User -->
+  <div id="pause" class="section">
+    <h4>⏸️ Pause / Unpause User</h4>
+    <form onsubmit="pauseUser(event, 'pause')">
+      <input required type="text" class="form-control mb-2" placeholder="Username" id="pause_username">
+      <button class="btn btn-warning me-2">Pause</button>
+      <button type="button" class="btn btn-secondary" onclick="pauseUser(event, 'unpause')">Unpause</button>
+    </form>
+  </div>
+
+  <!-- Info User -->
+  <div id="info" class="section">
+    <h4>ℹ️ User Info</h4>
+    <form onsubmit="infoUser(event)">
+      <input required type="text" class="form-control mb-2" placeholder="Username" id="info_username">
+      <button class="btn btn-primary">Get Info</button>
+    </form>
+    <div id="infoPanel" class="mt-3"></div>
+  </div>
+
+  <!-- Show Users -->
+  <div id="show" class="section">
+    <h4>📋 All Users</h4>
+    <table class="table table-bordered user-table">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Password</th>
+          <th>HWID</th>
+          <th>Expiry</th>
+          <th>Created</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="userList"></tbody>
+    </table>
+  </div>
+
+  <!-- Reset HWID -->
+  <div id="reset" class="section">
+    <h4>🔄 Reset HWID</h4>
+    <form onsubmit="resetHWID(event)">
+      <input required type="text" class="form-control mb-2" placeholder="Username" id="reset_username">
+      <button class="btn btn-dark">Reset HWID</button>
+    </form>
+  </div>
+
+<!-- Send Message -->
+<div id="sendmsg" class="section">
+  <h4>✉️ Send Message</h4>
+
+  <form onsubmit="loadUserMessages(event)" class="mb-3">
+    <div class="input-group">
+      <input required type="text" class="form-control" placeholder="Enter Username" id="message_username">
+      <button class="btn btn-secondary">🔄 Load</button>
+    </div>
+  </form>
+
+  <form onsubmit="sendMessage(event)" classs="mb-3">
+    <textarea required class="form-control mb-2" rows="2" placeholder="Type message..." id="message_text"></textarea>
+    <button class="btn btn-primary">Send</button>
+  </form>
+
+  <div id="messageList" style="max-height: 400px; overflow-y: auto; border: 1px solid #333; padding: 10px; border-radius: 8px;"></div>
+</div>
+
+<!-- Project Name -->
+<div id="project" class="section">
+  <h4>📁 Project Name</h4>
+  <div class="mb-3 position-relative">
+    <pre id="loginCode" class="p-3 rounded" style="background:#080808; color:white; border:1px solid #444; font-family: monospace; min-height:180px;">
+FRCONSOLE.login(guna2TextBox1.Text, guna2TextBox2.Text);
+
+if (FRCONSOLE.response.GetProperty("status").GetString() == "success")
+{
+    string message = FRCONSOLE.GetLatestMessage(guna2TextBox1.Text);
+
+    if (!string.IsNullOrEmpty(message))
+    {
+        var msgDialog = new Guna2MessageDialog();
+        msgDialog.Caption = "Admin Message";
+        msgDialog.Text = message;
+        msgDialog.Icon = MessageDialogIcon.Warning;
+        msgDialog.Buttons = MessageDialogButtons.OK;
+        msgDialog.Show();
+    }
+
+    MAIN main = new MAIN();
+    main.Show();
+    this.Hide();
+}
+else
+{
+    status.Text = "Status: " + FRCONSOLE.response.GetProperty("message").GetString();
+}
+
+    </pre>
+    <button class="btn btn-light btn-sm position-absolute top-0 end-0 m-2" onclick="copyCode()">📋</button>
+  </div>
+  <p class="developer">Developer: SHUBH</p>
+  <a href="/static/FRCONSOLE.cs" download class="btn btn-success btn-sm">⬇ Download FRCONSOLE.cs</a>
+</div>
+
+</div>
+
+<div id="toast" class="toast" style="display:none;"></div>
+
+<script>
+function showSection(id, e) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+  if (e) e.target.classList.add('active');
+  if (id === 'show') refreshUsers();
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.innerText = msg;
+  toast.style.display = 'block';
+  toast.style.animation = 'slideIn 0.5s forwards';
+  setTimeout(() => toast.style.right = '-300px', 3000);
+}
+
+function getCategory() { return document.getElementById('appSelect').value; }
+
+function addUser(e) {
+  e.preventDefault();
+  fetch('/add_user', { method:'POST', body:new URLSearchParams({
+    category:getCategory(),
+    username:document.getElementById("add_username").value,
+    password:document.getElementById("add_password").value,
+    expiry:document.getElementById("add_expiry").value })
+  }).then(res=>res.json()).then(d=>{ showToast(d.message); if(d.status==='success') refreshUsers(); });
+}
+
+function deleteUser(e) {
+  e.preventDefault();
+  fetch('/delete_user', { method:'POST', body:new URLSearchParams({
+    category:getCategory(),
+    username:document.getElementById("delete_username").value })
+  }).then(res=>res.json()).then(d=>{ showToast(d.message); if(d.status==='success') refreshUsers(); });
+}
+
+function pauseUser(e, action) {
+  e.preventDefault();
+  fetch('/pause_user', { method:'POST', body:new URLSearchParams({
+    category:getCategory(),
+    username:document.getElementById("pause_username").value,
+    action:action })
+  }).then(res=>res.json()).then(d=>showToast(d.message));
+}
+
+function infoUser(e) {
+  e.preventDefault();
+  fetch('/info_user', { method:'POST', body:new URLSearchParams({
+    category:getCategory(),
+    username:document.getElementById("info_username").value })
+  }).then(res=>res.json()).then(d=>{
+    if(d.status==='success'){
+      const u=d.data;
+      infoPanel.innerHTML=`
+        <div class='p-3 bg-dark rounded'>
+          <p><b>User:</b> ${u.Username}</p>
+          <p><b>Pass:</b> ${u.Password}</p>
+          <p><b>HWID:</b> ${u.HWID||'None'}</p>
+          <p><b>Expiry:</b> ${u.Expiry}</p>
+          <p><b>Created:</b> ${u.CreatedAt}</p>
+          <p><b>Status:</b> ${u.Status||'Unknown'}</p>
+        </div>`;
+    } else showToast(d.message);
+  });
+}
+
+function refreshUsers() {
+  fetch('/get_users',{method:'POST',body:new URLSearchParams({category:getCategory()})})
+  .then(r=>r.json()).then(users=>{
+    userList.innerHTML="";
+    users.forEach(u=>{ userList.innerHTML+=`
+      <tr><td>${u.Username}</td><td>${u.Password}</td><td>${u.HWID}</td>
+      <td>${u.Expiry}</td><td>${u.CreatedAt}</td><td>${u.Status}</td></tr>`; });
+  });
+}
+
+function loadUserMessages(e){ e.preventDefault(); loadMessages(message_username.value.trim()); }
+
+document.getElementById("message_username").addEventListener("input",()=>{
+  if(message_username.value.trim().length>=3) loadMessages(message_username.value.trim());
+});
+
+function loadMessages(u){
+  fetch('/get_messages',{method:'POST',body:new URLSearchParams({category:getCategory(),username:u})})
+  .then(r=>r.json()).then(d=>{
+    messageList.innerHTML="";
+    if(d.status==='success'){
+      d.messages.forEach(m=>{
+        messageList.innerHTML+=`<div class='border rounded p-2 mb-2'><b>${m.text}</b><br><small>${m.time}</small></div>`;
+      });
+    } else messageList.innerHTML="<span>No messages</span>";
+  });
+}
+
+function sendMessage(e){
+  e.preventDefault();
+  fetch('/send_message',{method:'POST',body:new URLSearchParams({
+    username:message_username.value.trim(), message:message_text.value.trim() })})
+  .then(r=>r.json()).then(d=>{
+    showToast(d.message); message_text.value=''; loadMessages(message_username.value.trim());
+  });
+}
+
+function resetHWID(e){
+  e.preventDefault();
+  fetch('/reset_hwid',{method:'POST',body:new URLSearchParams({
+    category:getCategory(),username:reset_username.value})})
+  .then(r=>r.json()).then(d=>showToast(d.message));
+}
+
+function copyCode(){ navigator.clipboard.writeText(loginCode.innerText).then(()=>showToast("Copied!")); }
+</script>
+
+</body>
+</html>
