@@ -9,11 +9,25 @@
     body { background-color: #000; font-family: 'Segoe UI', sans-serif; color:white; }
 
     .sidebar {
-      width: 240px; height: 100vh; position: fixed;
-      background-color: #000; padding: 20px 0;
-      border-right: 1px solid #222;
-      box-shadow: 3px 0 20px rgba(255,0,0,0.2);
-    }
+  width: 240px;
+  height: 100vh;
+  position: fixed;
+  background-color: #000;
+  padding: 20px 0;
+  border-right: 1px solid #222;
+  box-shadow: 3px 0 20px rgba(255,0,0,0.2);
+
+  display: flex;
+  flex-direction: column;
+}
+.glow-red {
+  color: #ff1a1a;
+  text-shadow:
+    0 0 5px rgba(255,0,0,0.8),
+    0 0 10px rgba(255,0,0,0.6),
+    0 0 18px rgba(255,0,0,0.4);
+}
+
 
     .sidebar h5 {
       text-align: center;
@@ -92,6 +106,15 @@
     .form-control:focus, .form-select:focus {
       border-color: #ff1a1a; box-shadow: 0 0 10px red;
     }
+    .white-datetime {
+  background: white !important;
+  color: black !important;
+}
+
+.white-datetime::-webkit-calendar-picker-indicator {
+  filter: invert(0);
+}
+
 
     table thead th { background:#151515; color:#ff1a1a; }
     table tbody td { background:#0d0d0d; color:white; }
@@ -124,7 +147,9 @@
   <a href="#" onclick="showSection('show', event)">📋 Show Users</a>
   <a href="#" onclick="showSection('reset', event)">🔄 Reset HWID</a>
   <a href="#" onclick="showSection('sendmsg', event)">✉️ Send Message</a>
-  <a href="#" onclick="showSection('project', event)">📁 Project Name</a>
+  <a href="#" onclick="showSection('project', event)">📁 Project</a>
+  <a href="#" onclick="protectedOpen(() => showSection('license', event))">🔑 License Manager</a>
+  <a href="/logout" style="margin-top:auto;">🚪 Logout</a>
 </div>
 
 <div class="main">
@@ -133,11 +158,9 @@
     <label class="form-label">SELECT APPLICATION</label>
     <select class="form-select" id="appSelect" onchange="refreshUsers()">
       <option value="FRCONSOLE">FRCONSOLE</option>
-      <option value="SILENTAIM">SILENTAIM</option>
-      <option value="INTERNAL">INTERNAL</option>
-      <option value="SOUTH">SOUTH</option>
+       <option value="HARSH">HARSH</option>
       <option value="SILENTAIM">SOUTHAIM</option>
-      <option value="SOUTHV2">SOUTHV2</option>
+      <option value="SOUTH">SOUTHV2</option>
     </select>
   </div>
   <!-- Add User -->
@@ -146,7 +169,7 @@
     <form onsubmit="addUser(event)">
       <input required type="text" class="form-control mb-2" placeholder="Username" id="add_username">
       <input required type="password" class="form-control mb-2" placeholder="Password" id="add_password">
-      <input required type="date" class="form-control mb-2" id="add_expiry">
+      <input required type="datetime-local" class="form-control mb-2 white-datetime" id="add_expiry">
       <button class="btn btn-success">Add</button>
     </form>
   </div>
@@ -203,7 +226,7 @@
     <h4>🔄 Reset HWID</h4>
     <form onsubmit="resetHWID(event)">
       <input required type="text" class="form-control mb-2" placeholder="Username" id="reset_username">
-      <button class="btn btn-dark">Reset HWID</button>
+      <button class="btn btn-danger">Reset HWID</button>
     </form>
   </div>
 
@@ -214,7 +237,7 @@
   <form onsubmit="loadUserMessages(event)" class="mb-3">
     <div class="input-group">
       <input required type="text" class="form-control" placeholder="Enter Username" id="message_username">
-      <button class="btn btn-secondary">🔄 Load</button>
+      <button class="btn btn-secondary">🔄 Show</button>
     </div>
   </form>
 
@@ -225,47 +248,89 @@
 
   <div id="messageList" style="max-height: 400px; overflow-y: auto; border: 1px solid #333; padding: 10px; border-radius: 8px;"></div>
 </div>
+<div id="license" class="section">
+  <h4>🔑 License Manager</h4>
 
+  <form onsubmit="generateLicense(event)">
+    <input required type="datetime-local" id="license_expiry" class="form-control mb-2 white-datetime">
+    <button class="btn btn-success">Create Key</button>
+  </form>
+
+  <div id="licenseList" class="mt-3"></div>
+</div>
 <!-- Project Name -->
 <div id="project" class="section">
-  <h4>📁 Project Name</h4>
-  <div class="mb-3 position-relative">
-    <pre id="loginCode" class="p-3 rounded" style="background:#080808; color:white; border:1px solid #444; font-family: monospace; min-height:180px;">
-FRCONSOLE.login(guna2TextBox1.Text, guna2TextBox2.Text);
+  <h4>📁 Project Status</h4>
 
-if (FRCONSOLE.response.GetProperty("status").GetString() == "success")
-{
-    string message = FRCONSOLE.GetLatestMessage(guna2TextBox1.Text);
+ 
 
-    if (!string.IsNullOrEmpty(message))
-    {
-        var msgDialog = new Guna2MessageDialog();
-        msgDialog.Caption = "Admin Message";
-        msgDialog.Text = message;
-        msgDialog.Icon = MessageDialogIcon.Warning;
-        msgDialog.Buttons = MessageDialogButtons.OK;
-        msgDialog.Show();
-    }
+ 
 
-    MAIN main = new MAIN();
-    main.Show();
-    this.Hide();
-}
-else
-{
-    status.Text = "Status: " + FRCONSOLE.response.GetProperty("message").GetString();
-}
+<!-- STATUS PANEL -->
+<div class="mt-4 p-3 rounded" style="
+  background: linear-gradient(180deg, #050505, #0d0d0d);
+  border: 1px solid #1f1f1f;
+  box-shadow: 0 0 18px rgba(255,0,0,0.18);
+  font-family: monospace;
+  color: #ff4d4d;
+  position: relative;
+  overflow: hidden;
+  line-height: 1.6;
+">
+  <div style="color: gray; font-size: 12px;">SYSTEM STATUS</div>
 
-    </pre>
-    <button class="btn btn-light btn-sm position-absolute top-0 end-0 m-2" onclick="copyCode()">📋</button>
-  </div>
-  <p class="developer">Developer: SHUBH</p>
-  <a href="/static/FRCONSOLE.cs" download class="btn btn-success btn-sm">⬇ Download FRCONSOLE.cs</a>
+  <div>● FRCONSOLE PANEL <span style="color:lime;">READY</span></div>
+  <div>● Build <span style="color:lime;">STABLE</span></div>
+  <div>● Security Layer <span style="color:lime;">ENABLED</span></div>
+
+  <!-- SCAN LINE -->
+  <div style="
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:2px;
+    background: linear-gradient(90deg, transparent, red, transparent);
+    animation: scan 2s linear infinite;
+  "></div>
 </div>
 
+<!-- FOOTER TAG -->
+<div class="mt-3 text-center p-2 rounded" style="
+  background: rgba(255,255,255,0.03);
+  border: 1px solid #1f1f1f;
+  color: gray;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+">
+  Developed By <span class="glow-red">SHUBH</span> • Private Build
 </div>
+
+<!-- SPACE + BUTTON ROW -->
+<div class="mt-3 text-center">
+
+<a href="#" onclick="protectedOpen('/view/FRCONSOLE.cs')" class="btn btn-danger btn-sm me-2">
+  📄 FRCONSOLE.cs
+</a>
+
+<a href="#" onclick="protectedOpen('/view/MAIN.txt')" class="btn btn-danger btn-sm me-2">
+  📄 MAIN.txt
+</a>
+
+<a href="#" onclick="protectedOpen('/view/LOGIN.txt')" class="btn btn-danger btn-sm">
+  📄 LOGIN.txt
+</a>
+
+</div>
+
+
+<!-- DEVELOPER GLOW -->
+<p class="developer glow-red mt-3">Developer: SHUBH</p>
+
+</div>   <!-- ✅ ab band karo -->
 
 <div id="toast" class="toast" style="display:none;"></div>
+
 
 <script>
 function showSection(id, e) {
@@ -274,7 +339,45 @@ function showSection(id, e) {
   document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
   if (e) e.target.classList.add('active');
   if (id === 'show') refreshUsers();
+  if(id === 'license') loadLicenses();
 }
+
+async function copyFile(url) {
+    try {
+        const res = await fetch(url);
+        const text = await res.text();
+
+        await navigator.clipboard.writeText(text);
+
+        showToast("Copied to clipboard");
+    } catch (e) {
+        showToast("Copy failed");
+    }
+}
+
+function protectedOpen(url) {
+
+    const pass = prompt("Enter password");
+
+    if (!pass) return;
+
+    fetch('/verify_password', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: 'password=' + encodeURIComponent(pass)
+    })
+    .then(r => r.json())
+    .then(d => {
+        if (d.status === 'success') {
+            window.location.href = url;
+        } else {
+            showToast("Wrong password");
+        }
+    });
+}
+
 
 function showToast(msg) {
   const toast = document.getElementById('toast');
@@ -345,22 +448,74 @@ function refreshUsers() {
 }
 
 function loadUserMessages(e){ e.preventDefault(); loadMessages(message_username.value.trim()); }
-
 document.getElementById("message_username").addEventListener("input",()=>{
   if(message_username.value.trim().length>=3) loadMessages(message_username.value.trim());
 });
 
+
 function loadMessages(u){
-  fetch('/get_messages',{method:'POST',body:new URLSearchParams({category:getCategory(),username:u})})
-  .then(r=>r.json()).then(d=>{
-    messageList.innerHTML="";
-    if(d.status==='success'){
-      d.messages.forEach(m=>{
-        messageList.innerHTML+=`<div class='border rounded p-2 mb-2'><b>${m.text}</b><br><small>${m.time}</small></div>`;
+  fetch('/get_messages',{
+    method:'POST',
+    body:new URLSearchParams({
+      category:getCategory(),
+      username:u
+    })
+  })
+  .then(r => r.json())
+  .then(d => {
+
+    messageList.innerHTML = "";
+
+    if(d.status === 'success'){
+
+      d.messages.forEach((m, i) => {
+
+        messageList.innerHTML += `
+        <div class='border rounded p-2 mb-2 d-flex justify-content-between align-items-start'>
+
+          <div>
+            <b>${m.text}</b><br>
+            <small>${m.time}</small>
+          </div>
+
+          <div class="dropdown">
+            <button class="btn btn-sm btn-dark" data-bs-toggle="dropdown">⋮</button>
+            <ul class="dropdown-menu dropdown-menu-dark">
+              <li>
+                <a class="dropdown-item" href="#" onclick="deleteMessage(${i})">
+                  Delete
+                </a>
+              </li>
+            </ul>
+          </div>
+
+        </div>`;
       });
-    } else messageList.innerHTML="<span>No messages</span>";
+
+    } else {
+      messageList.innerHTML = "<span>No messages</span>";
+    }
+
   });
 }
+
+function deleteMessage(index){
+  fetch('/update_message_status',{
+    method:'POST',
+    body:new URLSearchParams({
+      category:getCategory(),
+      username:message_username.value.trim(),
+      index:index,
+      action:'delete'
+    })
+  })
+  .then(r => r.json())
+  .then(d => {
+    showToast(d.message);
+    loadMessages(message_username.value.trim());
+  });
+}
+
 
 function sendMessage(e){
   e.preventDefault();
@@ -377,9 +532,64 @@ function resetHWID(e){
     category:getCategory(),username:reset_username.value})})
   .then(r=>r.json()).then(d=>showToast(d.message));
 }
+  function generateLicense(e){
+  e.preventDefault();
+  fetch('/generate_license',{
+    method:'POST',
+    body:new URLSearchParams({
+      category:getCategory(),
+      expiry:license_expiry.value
+    })
+  }).then(r=>r.json()).then(d=>{
+    showToast(d.message);
+    loadLicenses();
+  });
+}
+
+function loadLicenses(){
+  fetch('/get_licenses',{
+    method:'POST',
+    body:new URLSearchParams({category:getCategory()})
+  })
+  .then(r=>r.json())
+  .then(data=>{
+    licenseList.innerHTML="";
+    data.forEach(l=>{
+      licenseList.innerHTML+=`
+      <div class="border p-2 mb-2 d-flex justify-content-between">
+        <div>
+          <b>${l.Key}</b><br>
+          Expiry: ${l.Expiry}<br>
+          Status: ${l.Status}
+        </div>
+        <div>
+          <button class="btn btn-sm btn-warning" onclick="updateLicense('${l.Key}','pause')">Pause</button>
+          <button class="btn btn-sm btn-secondary" onclick="updateLicense('${l.Key}','unpause')">Unpause</button>
+          <button class="btn btn-sm btn-danger" onclick="updateLicense('${l.Key}','delete')">Delete</button>
+        </div>
+      </div>`;
+    });
+  });
+}
+
+function updateLicense(key,action){
+  fetch('/update_license',{
+    method:'POST',
+    body:new URLSearchParams({
+      category:getCategory(),
+      key:key,
+      action:action
+    })
+  }).then(r=>r.json()).then(d=>{
+    showToast(d.message);
+    loadLicenses();
+  });
+}
 
 function copyCode(){ navigator.clipboard.writeText(loginCode.innerText).then(()=>showToast("Copied!")); }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 
 </body>
 </html>
