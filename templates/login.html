@@ -2,129 +2,226 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>FR CONSOLE - Login</title>
+<title>FR CONSOLE Login</title>
 
-<!-- Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@900&family=Inter:wght@600&display=swap" rel="stylesheet">
-
-<!-- Bootstrap -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-<!-- TSParticles -->
-<script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
+<!-- ICONS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-  body {
+body {
     margin: 0;
-    padding: 0;
-    background: #000000;  /* Pure Black */
     height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    background: radial-gradient(circle at center, #1a0000 0%, #000 60%);
     font-family: "Inter", sans-serif;
-    overflow: hidden;
-  }
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
 
-  #particles-js {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-  }
-
-  .login-container {
-    text-align: center;
-  }
-
-  .title {
-    font-family: "Poppins", sans-serif;
-    font-size: 65px;
-    color: #ff1a1a;
-    font-weight: 900;
-    letter-spacing: 5px;
-    margin-bottom: 45px;
-    text-shadow: 0 0 25px rgba(255,0,0,0.9);
-  }
-
-  .login-box {
-    background: rgba(255,255,255,0.09);
-    backdrop-filter: blur(10px);
-    padding: 40px;
-    border-radius: 18px;
+.login-card {
     width: 420px;
-    box-shadow: 0 0 25px rgba(255,0,0,0.35);
-  }
+    background: rgba(20, 20, 20, 0.95);
+    border-radius: 18px;
+    padding: 35px;
+    box-shadow: 0 0 40px rgba(255, 0, 0, 0.15);
+    border: 1px solid rgba(255, 0, 0, 0.15);
+    text-align: center;
+}
 
-  .auth-title {
+.logo {
     font-family: "Poppins", sans-serif;
-    font-size: 28px;
+    font-size: 34px;
     font-weight: 900;
-    color: #ff1a1a;
-    letter-spacing: 3px;
-    margin-bottom: 28px;
-    text-shadow: 0 0 18px rgba(255,0,0,0.7);
-  }
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+    color: white;
+}
 
-  .login-box input {
-    height: 60px;
-    font-size: 20px;
-    border-radius: 12px;
+.logo span {
+    color: #ff2b2b;
+}
+
+.subtitle {
+    color: #777;
+    font-size: 14px;
+    margin-bottom: 30px;
+}
+
+.form-control {
+    height: 52px;
+    background: #0b0b0b;
+    border: 1px solid #1f1f1f;
+    border-radius: 10px;
+    color: white;
+    margin-bottom: 15px;
+}
+
+.form-control:focus {
+    background: #0b0b0b;
+    color: white;
+    border-color: #ff2b2b;
+    box-shadow: 0 0 0 1px rgba(255,0,0,0.2);
+}
+
+.btn-login {
+    height: 52px;
+    border-radius: 10px;
     font-weight: 600;
-    margin-bottom: 18px;
-  }
+    letter-spacing: 0.5px;
+    background: linear-gradient(90deg, #ff1a1a, #b30000);
+    border: none;
+    margin-top: 5px;
+}
 
-  .btn-login {
-    height: 58px;
-    font-size: 20px;
-    font-weight: bold;
-    border-radius: 12px;
-  }
+.links {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    margin-top: 8px;
+    margin-bottom: 18px;
+}
+
+.links a {
+    color: #888;
+    text-decoration: none;
+}
+
+.divider {
+    margin: 22px 0;
+    color: #444;
+    font-size: 13px;
+    position: relative;
+}
+
+.divider::before,
+.divider::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 40%;
+    height: 1px;
+    background: #222;
+}
+
+.divider::before { left: 0; }
+.divider::after { right: 0; }
+
+.socials {
+    display: flex;
+    gap: 10px;
+}
+
+.social-btn {
+    flex: 1;
+    height: 45px;
+    border-radius: 10px;
+    background: #0b0b0b;
+    border: 1px solid #1f1f1f;
+    color: #aaa;
+    transition: 0.2s;
+    font-size: 18px;
+}
+
+.social-btn:hover {
+    border-color: #ff2b2b;
+    color: #ff2b2b;
+}
+    .card-container {
+  perspective: 1000px;
+}
+
+.card-inner {
+  position: relative;
+  width: 100%;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.card-front,
+.card-back {
+  position: absolute;
+  width: 100%;
+  backface-visibility: hidden;
+}
+
+.card-back {
+  transform: rotateY(180deg);
+}
+
+.card-inner.flipped {
+  transform: rotateY(180deg);
+}
 </style>
 </head>
 
 <body>
 
-<div id="particles-js"></div>
+<div class="login-card">
 
-<div class="login-container">
-  <h1 class="title">FR CONSOLE</h1>
+    <div class="logo">FR <span>CONSOLE</span></div>
+    <div class="subtitle">Secure authentication required</div>
 
-  <div class="login-box">
-    <div class="auth-title">PANNEL AUTHENTICATION</div>
+   <div class="card-container">
+  <div class="card-inner" id="cardInner">
 
-    <form method="POST">
-      <input type="text" class="form-control" placeholder="Username" name="username" required>
-      <input type="password" class="form-control" placeholder="Password" name="password" required>
-      <button class="btn btn-danger w-100 btn-login">LOGIN</button>
+    <!-- FRONT SIDE -->
+    <div class="card-front">
+      <form method="POST">
+        <input type="text" class="form-control" placeholder="Username" name="username" required>
+        <input type="password" class="form-control" placeholder="Password" name="password" required>
 
-      {% if error %}
-      <div class="alert alert-danger mt-3">{{ error }}</div>
-      {% endif %}
-    </form>
+        <div class="links">
+          <a href="#" onclick="flipCard()">Use License Key</a>
+        </div>
+
+        <button class="btn btn-danger w-100 btn-login">Log In →</button>
+
+        {% if error %}
+        <div class="alert alert-danger mt-3">{{ error }}</div>
+        {% endif %}
+      </form>
+    </div>
+
+    <!-- BACK SIDE -->
+    <div class="card-back">
+      <form method="POST">
+        <input type="text" class="form-control" placeholder="Enter License Key" name="license_key" required>
+
+        <div class="links">
+          <a href="#" onclick="flipCard()">Back to Username</a>
+        </div>
+
+        <button class="btn btn-danger w-100 btn-login">
+          Login with License →
+        </button>
+      </form>
+    </div>
+
   </div>
 </div>
 
+<div class="divider">COMMUNITY</div>
+
+<div class="socials">
+    <button class="social-btn" onclick="window.open('https://discord.gg/JjdDagrkvX', '_blank')">
+        <i class="fa-brands fa-discord"></i>
+    </button>
+
+    <button class="social-btn" onclick="window.open('https://guns.lol/shubh.', '_blank')">
+        <i class="fa-solid fa-gun"></i>
+    </button>
+</div>
+
+</div>
+
 <script>
-tsParticles.load("particles-js", {
-  background: { color: "#000" },
-  particles: {
-    number: { value: 90 },
-    size: { value: 4 },
-    move: { speed: 1.1, enable: true },
-    shape: { type: "circle" },
-    opacity: { value: 1 },
-    color: { value: "#ff0000" },
-    links: {
-      enable: true,
-      distance: 140,
-      color: "#ff0000",
-      opacity: 0.6,
-      width: 1.3
-    }
-  }
-});
+function flipCard(){
+  document.getElementById("cardInner").classList.toggle("flipped");
+}
 </script>
 
 </body>
