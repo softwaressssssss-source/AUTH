@@ -129,14 +129,12 @@ def clean_expired_users(data):
     
 def send_login_info():
     try:
-
         ip = request.headers.get("X-Forwarded-For", request.remote_addr)
         if ip:
             ip = ip.split(",")[0].strip()
 
         user_agent = request.headers.get("User-Agent")
 
-        # Device name detect
         if "Windows" in user_agent:
             device_name = "Windows PC"
         elif "Android" in user_agent:
@@ -156,26 +154,10 @@ def send_login_info():
                     "title": "💻 Login Information",
                     "color": 0x32CD32,
                     "fields": [
-                        {
-                            "name": "🌐 IP Address",
-                            "value": ip,
-                            "inline": False
-                        },
-                        {
-                            "name": "🖥 Device",
-                            "value": device_name,
-                            "inline": False
-                        },
-                        {
-                            "name": "📱 User-Agent",
-                            "value": user_agent,
-                            "inline": False
-                        },
-                        {
-                            "name": "⏰ Time",
-                            "value": time,
-                            "inline": False
-                        }
+                        {"name": "🌐 IP Address", "value": ip, "inline": False},
+                        {"name": "🖥 Device", "value": device_name, "inline": False},
+                        {"name": "📱 User-Agent", "value": user_agent, "inline": False},
+                        {"name": "⏰ Time", "value": time, "inline": False}
                     ],
                     "footer": {
                         "text": "FR Console Security"
@@ -193,7 +175,6 @@ def load_data():
     data = load_data_raw()
     return clean_expired_users(data)
 def send_client_login(app_name, username, password, ip, hwid, pc_name):
-
     try:
         data = {
             "embeds": [
