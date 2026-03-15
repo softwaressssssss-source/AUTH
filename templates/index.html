@@ -123,14 +123,27 @@
 
     #loginCode { background:#050505; border:1px solid #333; }
 
-    .toast {
-      position: fixed; bottom: 20px; right:-300px;
-      background:#ff1a1a; color:white;
-      padding:12px 24px; border-radius:6px;
-      font-weight:800; animation:slideIn 0.5s forwards;
-    }
+   .toast {
+  position: fixed;
+  bottom: 20px;
+  right: -300px;
+  background: #ff1a1a;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-weight: 800;
+  transition: right 0.5s;
+}
 
-    @keyframes slideIn { from { right:-300px; } to { right:20px; } }
+@keyframes slideIn {
+  from { right: -300px; }
+  to { right: 20px; }
+}
+
+@keyframes slideOut {
+  from { right: 20px; }
+  to { right: -300px; }
+}
   </style>
 </head>
 
@@ -148,7 +161,6 @@
   <a href="#" onclick="showSection('reset', event)">🔄 Reset HWID</a>
   <a href="#" onclick="showSection('sendmsg', event)">✉️ Send Message</a>
   <a href="#" onclick="showSection('project', event)">📁 Project</a>
-  <a href="#" onclick="protectedOpen(() => showSection('license', event))">🔑 License Manager</a>
   <a href="/logout" style="margin-top:auto;">🚪 Logout</a>
 </div>
 
@@ -161,8 +173,13 @@
        <option value="HARSH">HARSH</option>
       <option value="SILENTAIM">SOUTHAIM</option>
       <option value="SOUTH">SOUTHV2</option>
+      <option value="TUFFAN">TUFFAN</option>
     </select>
   </div>
+  <div class="mb-2" style="font-size:15px;font-weight:600;">
+  <span style="color:#aaa;">Online Users :</span>
+  <span id="onlineCount" style="color:#00ff66;">0</span>
+</div>
   <!-- Add User -->
   <div id="add" class="section active">
     <h4>➕ Add User</h4>
@@ -215,6 +232,7 @@
           <th>Expiry</th>
           <th>Created</th>
           <th>Status</th>
+          <th>Online</th>
         </tr>
       </thead>
       <tbody id="userList"></tbody>
@@ -248,16 +266,7 @@
 
   <div id="messageList" style="max-height: 400px; overflow-y: auto; border: 1px solid #333; padding: 10px; border-radius: 8px;"></div>
 </div>
-<div id="license" class="section">
-  <h4>🔑 License Manager</h4>
 
-  <form onsubmit="generateLicense(event)">
-    <input required type="datetime-local" id="license_expiry" class="form-control mb-2 white-datetime">
-    <button class="btn btn-success">Create Key</button>
-  </form>
-
-  <div id="licenseList" class="mt-3"></div>
-</div>
 <!-- Project Name -->
 <div id="project" class="section">
   <h4>📁 Project Status</h4>
@@ -313,12 +322,12 @@
   📄 FRCONSOLE.cs
 </a>
 
-<a href="#" onclick="protectedOpen('/view/MAIN.txt')" class="btn btn-danger btn-sm me-2">
-  📄 MAIN.txt
+<a href="#" onclick="protectedOpen('/view/MAIN.cs')" class="btn btn-danger btn-sm me-2">
+  📄 MAIN.cs
 </a>
 
-<a href="#" onclick="protectedOpen('/view/LOGIN.txt')" class="btn btn-danger btn-sm">
-  📄 LOGIN.txt
+<a href="#" onclick="protectedOpen('/view/LOGIN.cs')" class="btn btn-danger btn-sm">
+  📄 LOGIN.cs
 </a>
 
 </div>
@@ -339,7 +348,6 @@ function showSection(id, e) {
   document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
   if (e) e.target.classList.add('active');
   if (id === 'show') refreshUsers();
-  if(id === 'license') loadLicenses();
 }
 
 async function copyFile(url) {
@@ -380,11 +388,25 @@ function protectedOpen(url) {
 
 
 function showToast(msg) {
+
   const toast = document.getElementById('toast');
+
   toast.innerText = msg;
   toast.style.display = 'block';
+
+  // slide in
   toast.style.animation = 'slideIn 0.5s forwards';
-  setTimeout(() => toast.style.right = '-300px', 3000);
+
+  // 2 sec baad slide out
+  setTimeout(() => {
+    toast.style.animation = 'slideOut 0.5s forwards';
+  }, 2000);
+
+  // hide after animation
+  setTimeout(() => {
+    toast.style.display = 'none';
+  }, 2500);
+
 }
 
 function getCategory() { return document.getElementById('appSelect').value; }
@@ -440,13 +462,37 @@ function infoUser(e) {
 function refreshUsers() {
   fetch('/get_users',{method:'POST',body:new URLSearchParams({category:getCategory()})})
   .then(r=>r.json()).then(users=>{
+
     userList.innerHTML="";
-    users.forEach(u=>{ userList.innerHTML+=`
-      <tr><td>${u.Username}</td><td>${u.Password}</td><td>${u.HWID}</td>
-      <td>${u.Expiry}</td><td>${u.CreatedAt}</td><td>${u.Status}</td></tr>`; });
+
+    let online = 0;
+
+    users.forEach(u=>{
+
+      if(u.Online === "Online") online++;
+
+      userList.innerHTML+=`
+      <tr>
+        <td>${u.Username}</td>
+        <td>${u.Password}</td>
+        <td>${u.HWID}</td>
+        <td>${u.Expiry}</td>
+        <td>${u.CreatedAt}</td>
+        <td>${u.Status}</td>
+        <td>
+          ${u.Online === "Online"
+            ? "<span style='color:lime;font-weight:700'>Online</span>"
+            : "<span style='color:red;font-weight:700'>Offline</span>"
+          }
+        </td>
+      </tr>`;
+    });
+
+    document.getElementById("onlineCount").innerText = online;
+
   });
 }
-
+setInterval(refreshUsers, 5000);
 function loadUserMessages(e){ e.preventDefault(); loadMessages(message_username.value.trim()); }
 document.getElementById("message_username").addEventListener("input",()=>{
   if(message_username.value.trim().length>=3) loadMessages(message_username.value.trim());
@@ -531,59 +577,6 @@ function resetHWID(e){
   fetch('/reset_hwid',{method:'POST',body:new URLSearchParams({
     category:getCategory(),username:reset_username.value})})
   .then(r=>r.json()).then(d=>showToast(d.message));
-}
-  function generateLicense(e){
-  e.preventDefault();
-  fetch('/generate_license',{
-    method:'POST',
-    body:new URLSearchParams({
-      category:getCategory(),
-      expiry:license_expiry.value
-    })
-  }).then(r=>r.json()).then(d=>{
-    showToast(d.message);
-    loadLicenses();
-  });
-}
-
-function loadLicenses(){
-  fetch('/get_licenses',{
-    method:'POST',
-    body:new URLSearchParams({category:getCategory()})
-  })
-  .then(r=>r.json())
-  .then(data=>{
-    licenseList.innerHTML="";
-    data.forEach(l=>{
-      licenseList.innerHTML+=`
-      <div class="border p-2 mb-2 d-flex justify-content-between">
-        <div>
-          <b>${l.Key}</b><br>
-          Expiry: ${l.Expiry}<br>
-          Status: ${l.Status}
-        </div>
-        <div>
-          <button class="btn btn-sm btn-warning" onclick="updateLicense('${l.Key}','pause')">Pause</button>
-          <button class="btn btn-sm btn-secondary" onclick="updateLicense('${l.Key}','unpause')">Unpause</button>
-          <button class="btn btn-sm btn-danger" onclick="updateLicense('${l.Key}','delete')">Delete</button>
-        </div>
-      </div>`;
-    });
-  });
-}
-
-function updateLicense(key,action){
-  fetch('/update_license',{
-    method:'POST',
-    body:new URLSearchParams({
-      category:getCategory(),
-      key:key,
-      action:action
-    })
-  }).then(r=>r.json()).then(d=>{
-    showToast(d.message);
-    loadLicenses();
-  });
 }
 
 function copyCode(){ navigator.clipboard.writeText(loginCode.innerText).then(()=>showToast("Copied!")); }
