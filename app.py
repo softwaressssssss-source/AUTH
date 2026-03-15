@@ -13,8 +13,8 @@ LICENSE_KEYS = {
     "HARSH": {"hwid": ""},
     "PRINCE": {"hwid": ""}
 }
-DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1482347636932608061/78cGhgwcz47pkLu1nOOPozfxedGJ4hzUJIq88fGDIOxGbZ_SQAi5Wp9-354np203_UYd"
-DISCORD_WEBHOOKK = "https://discord.com/api/webhooks/1482348028038742181/EpByNd1j3fCsQqZiAPvrEnFyvLrv0MKqgRLRldPPm7AI78uq2oZF98_Bp-OkS9aPhVJ4"
+DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1482608417276428403/tbA3o5_q4e46vjHtDrNpn15FsRLFQwYPEv73ib379JpvWcqPaGkcR4YCQcrKz-c3FV4K"
+DISCORD_WEBHOOKK = "https://discord.com/api/webhooks/1482608301031297179/9-edWNX_4W1NACFTlLDA2oVlKu875ot3pDb9bDcp9DUZE2VwoCnNUsNykdmgj78kF7Vk"
 ADMIN_USERNAME = "FR"
 ADMIN_PASSWORD = "PUSSY"
 
