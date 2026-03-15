@@ -2,159 +2,170 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>FR CONSOLE Login</title>
+<title>FR CONSOLE</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-<!-- ICONS -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-body {
-    margin: 0;
-    height: 100vh;
-    background: radial-gradient(circle at center, #1a0000 0%, #000 60%);
-    font-family: "Inter", sans-serif;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
+
+body{
+margin:0;
+height:100vh;
+background: radial-gradient(circle at center, #1a0000 0%, #000 60%);
+font-family:"Inter",sans-serif;
+display:flex;
+align-items:center;
+justify-content:center;
+color:white;
 }
 
-.login-card {
-    width: 420px;
-    background: rgba(20, 20, 20, 0.95);
-    border-radius: 18px;
-    padding: 35px;
-    box-shadow: 0 0 40px rgba(255, 0, 0, 0.15);
-    border: 1px solid rgba(255, 0, 0, 0.15);
-    text-align: center;
+/* CARD */
+
+.login-card{
+width:420px;
+perspective:1000px;
 }
 
-.logo {
-    font-family: "Poppins", sans-serif;
-    font-size: 34px;
-    font-weight: 900;
-    letter-spacing: 1px;
-    margin-bottom: 6px;
-    color: white;
+.card-inner{
+position:relative;
+width:100%;
+transition:transform .6s;
+transform-style:preserve-3d;
 }
 
-.logo span {
-    color: #ff2b2b;
-}
-
-.subtitle {
-    color: #777;
-    font-size: 14px;
-    margin-bottom: 30px;
-}
-
-.form-control {
-    height: 52px;
-    background: #0b0b0b;
-    border: 1px solid #1f1f1f;
-    border-radius: 10px;
-    color: white;
-    margin-bottom: 15px;
-}
-
-.form-control:focus {
-    background: #0b0b0b;
-    color: white;
-    border-color: #ff2b2b;
-    box-shadow: 0 0 0 1px rgba(255,0,0,0.2);
-}
-
-.btn-login {
-    height: 52px;
-    border-radius: 10px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    background: linear-gradient(90deg, #ff1a1a, #b30000);
-    border: none;
-    margin-top: 5px;
-}
-
-.links {
-    display: flex;
-    justify-content: space-between;
-    font-size: 13px;
-    margin-top: 8px;
-    margin-bottom: 18px;
-}
-
-.links a {
-    color: #888;
-    text-decoration: none;
-}
-
-.divider {
-    margin: 22px 0;
-    color: #444;
-    font-size: 13px;
-    position: relative;
-}
-
-.divider::before,
-.divider::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    width: 40%;
-    height: 1px;
-    background: #222;
-}
-
-.divider::before { left: 0; }
-.divider::after { right: 0; }
-
-.socials {
-    display: flex;
-    gap: 10px;
-}
-
-.social-btn {
-    flex: 1;
-    height: 45px;
-    border-radius: 10px;
-    background: #0b0b0b;
-    border: 1px solid #1f1f1f;
-    color: #aaa;
-    transition: 0.2s;
-    font-size: 18px;
-}
-
-.social-btn:hover {
-    border-color: #ff2b2b;
-    color: #ff2b2b;
-}
-    .card-container {
-  perspective: 1000px;
-}
-
-.card-inner {
-  position: relative;
-  width: 100%;
-  transition: transform 0.6s;
-  transform-style: preserve-3d;
+.card-inner.flip{
+transform:rotateY(180deg);
 }
 
 .card-front,
-.card-back {
-  position: absolute;
-  width: 100%;
-  backface-visibility: hidden;
+.card-back{
+background:rgba(20,20,20,.95);
+border-radius:18px;
+padding:35px;
+box-shadow:0 0 40px rgba(255,0,0,.15);
+border:1px solid rgba(255,0,0,.15);
+text-align:center;
+backface-visibility:hidden;
 }
 
-.card-back {
-  transform: rotateY(180deg);
+.card-back{
+position:absolute;
+top:0;
+left:0;
+width:100%;
+transform:rotateY(180deg);
 }
 
-.card-inner.flipped {
-  transform: rotateY(180deg);
+/* LOGO */
+
+.logo{
+font-family:"Poppins",sans-serif;
+font-size:34px;
+font-weight:900;
+letter-spacing:1px;
+margin-bottom:6px;
 }
+
+.logo span{
+color:#ff2b2b;
+}
+
+.subtitle{
+color:#777;
+font-size:14px;
+margin-bottom:30px;
+}
+
+/* INPUT */
+
+.form-control{
+height:52px;
+background:#0b0b0b;
+border:1px solid #1f1f1f;
+border-radius:10px;
+color:white;
+margin-bottom:15px;
+}
+
+.form-control:focus{
+background:#0b0b0b;
+color:white;
+border-color:#ff2b2b;
+box-shadow:0 0 0 1px rgba(255,0,0,.2);
+}
+
+/* BUTTON */
+
+.btn-login{
+height:52px;
+border-radius:10px;
+font-weight:600;
+letter-spacing:.5px;
+background:linear-gradient(90deg,#ff1a1a,#b30000);
+border:none;
+margin-top:5px;
+}
+
+.back-btn{
+height:52px;
+border-radius:10px;
+background:#222;
+color:#bbb;
+border:1px solid #333;
+transition:.2s;
+}
+
+.back-btn:hover{
+border-color:#ff2b2b;
+color:#ff2b2b;
+}
+
+/* COMMUNITY */
+
+.divider{
+margin:22px 0;
+color:#444;
+font-size:13px;
+position:relative;
+}
+
+.divider::before,
+.divider::after{
+content:"";
+position:absolute;
+top:50%;
+width:40%;
+height:1px;
+background:#222;
+}
+
+.divider::before{left:0;}
+.divider::after{right:0;}
+
+.socials{
+display:flex;
+gap:10px;
+}
+
+.social-btn{
+flex:1;
+height:45px;
+border-radius:10px;
+background:#0b0b0b;
+border:1px solid #1f1f1f;
+color:#aaa;
+transition:.2s;
+font-size:18px;
+}
+
+.social-btn:hover{
+border-color:#ff2b2b;
+color:#ff2b2b;
+}
+
 </style>
 </head>
 
@@ -162,66 +173,143 @@ body {
 
 <div class="login-card">
 
-    <div class="logo">FR <span>CONSOLE</span></div>
-    <div class="subtitle">Secure authentication required</div>
+<div id="cardInner" class="card-inner">
 
-   <div class="card-container">
-  <div class="card-inner" id="cardInner">
+<!-- FRONT -->
 
-    <!-- FRONT SIDE -->
-    <div class="card-front">
-      <form method="POST">
-        <input type="text" class="form-control" placeholder="Username" name="username" required>
-        <input type="password" class="form-control" placeholder="Password" name="password" required>
+<div class="card-front">
 
-        <div class="links">
-          <a href="#" onclick="flipCard()">Use License Key</a>
-        </div>
+<div class="logo">FR <span>CONSOLE</span></div>
+<div class="subtitle">Secure authentication required</div>
 
-        <button class="btn btn-danger w-100 btn-login">Log In →</button>
+<form method="POST" onsubmit="showLoading()">
 
-        {% if error %}
-        <div class="alert alert-danger mt-3">{{ error }}</div>
-        {% endif %}
-      </form>
-    </div>
+<input type="text" class="form-control" placeholder="Username" name="username" required>
 
-    <!-- BACK SIDE -->
-    <div class="card-back">
-      <form method="POST">
-        <input type="text" class="form-control" placeholder="Enter License Key" name="license_key" required>
+<input type="password" class="form-control" placeholder="Password" name="password" required>
 
-        <div class="links">
-          <a href="#" onclick="flipCard()">Back to Username</a>
-        </div>
+<button id="loginBtn" class="btn btn-danger w-100 btn-login">
+<span id="btnText">Log In →</span>
+<span id="btnLoader" style="display:none;">
+<i class="fa fa-spinner fa-spin"></i> Redirecting...
+</span>
+</button>
 
-        <button class="btn btn-danger w-100 btn-login">
-          Login with License →
-        </button>
-      </form>
-    </div>
+<button type="button" class="btn w-100 mt-2 back-btn" onclick="flipCard()">
+Login With License
+</button>
 
-  </div>
-</div>
+</form>
+
+{% if error %}
+<div class="alert alert-danger mt-3">{{ error }}</div>
+{% endif %}
 
 <div class="divider">COMMUNITY</div>
 
 <div class="socials">
-    <button class="social-btn" onclick="window.open('https://discord.gg/JjdDagrkvX', '_blank')">
-        <i class="fa-brands fa-discord"></i>
-    </button>
 
-    <button class="social-btn" onclick="window.open('https://guns.lol/shubh.', '_blank')">
-        <i class="fa-solid fa-gun"></i>
-    </button>
+<button class="social-btn" onclick="window.open('https://discord.gg/JjdDagrkvX','_blank')">
+<i class="fa-brands fa-discord"></i>
+</button>
+
+<button class="social-btn" onclick="window.open('https://guns.lol/shubh.','_blank')">
+<i class="fa-solid fa-gun"></i>
+</button>
+
 </div>
 
+</div>
+
+<!-- BACK -->
+
+<div class="card-back">
+
+<div class="logo">FR <span>CONSOLE</span></div>
+<div class="subtitle">Enter your license key</div>
+
+<input type="text" class="form-control" placeholder="Enter License Key" id="licenseInput">
+
+<div id="licenseError" class="alert alert-danger mt-3" style="display:none;"></div>
+
+<button id="licenseBtn" class="btn btn-danger w-100 btn-login mt-2" onclick="loginLicense()">
+<span id="licenseText">Activate License</span>
+<span id="licenseLoader" style="display:none;">
+<i class="fa fa-spinner fa-spin"></i> Checking...
+</span>
+</button>
+
+<button class="btn w-100 mt-2 back-btn" onclick="flipBack()">
+Admin Login
+</button>
+<div class="divider">COMMUNITY</div>
+
+<div class="socials">
+
+<button class="social-btn" onclick="window.open('https://discord.gg/JjdDagrkvX','_blank')">
+<i class="fa-brands fa-discord"></i>
+</button>
+
+<button class="social-btn" onclick="window.open('https://guns.lol/shubh.','_blank')">
+<i class="fa-solid fa-gun"></i>
+</button>
+
+</div>
+</div>
+
+</div>
 </div>
 
 <script>
+
 function flipCard(){
-  document.getElementById("cardInner").classList.toggle("flipped");
+document.getElementById("cardInner").classList.add("flip");
 }
+
+function flipBack(){
+document.getElementById("cardInner").classList.remove("flip");
+}
+
+function showLoading(){
+document.getElementById("btnText").style.display="none";
+document.getElementById("btnLoader").style.display="inline";
+document.getElementById("loginBtn").disabled=true;
+}
+
+async function loginLicense(){
+
+document.getElementById("licenseError").style.display="none";
+
+document.getElementById("licenseText").style.display="none";
+document.getElementById("licenseLoader").style.display="inline";
+document.getElementById("licenseBtn").disabled=true;
+
+let license=document.getElementById("licenseInput").value;
+
+let res=await fetch("/license_login",{
+method:"POST",
+headers:{
+"Content-Type":"application/x-www-form-urlencoded"
+},
+body:"license="+encodeURIComponent(license)
+});
+
+let data=await res.json();
+
+if(data.status==="success"){
+window.location="/";
+}else{
+
+document.getElementById("licenseText").style.display="inline";
+document.getElementById("licenseLoader").style.display="none";
+document.getElementById("licenseBtn").disabled=false;
+
+document.getElementById("licenseError").innerText=data.message;
+document.getElementById("licenseError").style.display="block";
+}
+
+}
+
 </script>
 
 </body>
